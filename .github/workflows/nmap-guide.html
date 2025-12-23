@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل Nmap الشامل للمبتدئين</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            line-height: 1.8;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(25, 25, 45, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #00ff88;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        h2 {
+            color: #00d4ff;
+            border-right: 5px solid #00d4ff;
+            padding-right: 15px;
+            margin: 30px 0 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        h2:hover {
+            color: #00ff88;
+            border-right-color: #00ff88;
+        }
+
+        h3 {
+            color: #ffaa00;
+            margin: 20px 0 10px 0;
+        }
+
+        .section {
+            background: rgba(30, 30, 50, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .command-box {
+            background: #0d0d1a;
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            direction: ltr;
+            text-align: left;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .command-box::before {
+            content: "$ ";
+            color: #ffaa00;
+            font-weight: bold;
+        }
+
+        .example-box {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .warning-box {
+            background: rgba(255, 0, 0, 0.1);
+            border-left: 4px solid #ff0000;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .tip-box {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .option-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .option-table th {
+            background: #00d4ff;
+            color: #0d0d1a;
+            padding: 12px;
+            text-align: right;
+        }
+
+        .option-table td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .option-table tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            color: #0d0d1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .expand-icon {
+            display: inline-block;
+            margin-left: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ دليل Nmap الشامل للمبتدئين</h1>
+        
+        <div class="section">
+            <h3>ما هو Nmap؟</h3>
+            <p><strong>Nmap</strong> (Network Mapper) هو أداة مفتوحة المصدر ومجانية لاكتشاف الشبكات والأمن السيبراني. يستخدم لمعرفة ما الأجهزة المتصلة بالشبكة وما الخدمات المتاحة عليها.</p>
+        </div>
+
+        <img src="https://nmap.org/images/nmap_screen.jpg" alt="Nmap Screenshot" style="max-width: 100%; height: auto; border-radius: 10px; margin: 20px 0;">
+
+        <h2 onclick="toggleSection('basic')">
+            <span class="expand-icon">▶</span> الأوامر الأساسية
+        </h2>
+        <div id="basic" class="section hidden">
+            <div class="command-box">nmap target.com</div>
+            <p>مسح أساسي للـ target.com</p>
+            
+            <div class="command-box">nmap -h</div>
+            <p>عرض المساعدة (help)</p>
+            
+            <div class="command-box">nmap -v target.com</div>
+            <p>مسح مع تفاصيل أكثر (-v = verbose)</p>
+        </div>
+
+        <h2 onclick="toggleSection('target')">
+            <span class="expand-icon">▶</span> تحديد الأهداف (TARGET SPECIFICATION)
+        </h2>
+        <div id="target" class="section hidden">
+            <table class="option-table">
+                <tr>
+                    <th>الخيار</th>
+                    <th>الوصف</th>
+                    <th>مثال</th>
+                </tr>
+                <tr>
+                    <td><code>192.168.1.1</code></td>
+                    <td>عنوان IP واحد</td>
+                    <td><div class="command-box">nmap 192.168.1.1</div></td>
+                </tr>
+                <tr>
+                    <td><code>scanme.nmap.org</code></td>
+                    <td>اسم نطاق</td>
+                    <td><div class="command-box">nmap scanme.nmap.org</div></td>
+                </tr>
+                <tr>
+                    <td><code>192.168.1.0/24</code></td>
+                    <td>شبكة فرعية كاملة (256 عنوان)</td>
+                    <td><div class="command-box">nmap 192.168.1.0/24</div></td>
+                </tr>
+                <tr>
+                    <td><code>-iL file.txt</code></td>
+                    <td>قراءة الأهداف من ملف</td>
+                    <td><div class="command-box">nmap -iL targets.txt</div></td>
+                </tr>
+                <tr>
+                    <td><code>192.168.1.1-50</code></td>
+                    <td>نطاق عناوين</td>
+                    <td><div class="command-box">nmap 192.168.1.1-50</div></td>
+                </tr>
+            </table>
+            
+            <div class="example-box">
+                <strong>💡 تكتيك متقدم:</strong> 
+                <div class="command-box">nmap -iL hosts.txt --exclude 192.168.1.10</div>
+                <p>مسح جميع الأهداف من الملف ما عدا جهاز محدد. مفيد عندما تريد استثناء خادمك الخاص!</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('discovery')">
+            <span class="expand-icon">▶</span> اكتشاف الأجهزة (HOST DISCOVERY)
+        </h2>
+        <div id="discovery" class="section hidden">
+            <h3>🔍 لماذا هذا مهم؟</h3>
+            <p>قبل مسح المنافذ، يجب على Nmap معرفة إن كان الجهاز متصلاً أصلاً. هذه المرحلة تسمى "Host Discovery".</p>
+            
+            <table class="option-table">
+                <tr>
+                    <th>الخيار</th>
+                    <th>الوصف</th>
+                    <th>متى تستخدمه؟</th>
+                </tr>
+                <tr>
+                    <td><code>-sn</code></td>
+                    <td>فقط ping (بدون مسح منافذ)</td>
+                    <td>لإيجاد الأجهزة الحية فقط</td>
+                </tr>
+                <tr>
+                    <td><code>-Pn</code></td>
+                    <td>تخطي اكتشاف المضيف (يعتبر الجميع متصل)</td>
+                    <td>عندما يحظر الجهاز ping</td>
+                </tr>
+                <tr>
+                    <td><code>-PS22,80</code></td>
+                    <<td>TCP SYN ping (TCP握手)</td>
+                    <td>لتجاوز جدران الحماية</td>
+                </tr>
+                <tr>
+                    <td><code>-PA80</code></td>
+                    <td>TCP ACK ping</td>
+                    <td>للحصول على استجابة من أجهزة متحفظة</td>
+                </tr>
+                <tr>
+                    <td><code>-PU53</code></td>
+                    <td>UDP ping</td>
+                    <td>لأجهزة لا تستجيب لـ TCP</td>
+                </tr>
+            </table>
+            
+            <div class="tip-box">
+                <strong>🎯 السيناريو العملي:</strong>
+                <div class="command-box">nmap -sn 192.168.1.0/24</div>
+                <p>أفضل أمر لإيجاد جميع الأجهزة على شبكتك المنزلية! سريع ولا يثير الشكوك.</p>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ تحذير:</strong> لا تستخدم <code>-Pn</code> على شبكات كبيرة لأنه سيبطئ المسح كثيراً!
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('scan')">
+            <span class="expand-icon">▶</span> تقنيات المسح (SCAN TECHNIQUES)
+        </h2>
+        <div id="scan" class="section hidden">
+            <h3>🔬 أنواع المسح - الفرق بينها:</h3>
+            
+            <div class="section">
+                <h4>TCP SYN Scan (-sS) - الافتراضي</h4>
+                <p><strong>كيف يعمل:</strong> يقوم بإرسال حزمة SYN فقط (لا يكمل الاتصال)</p>
+                <p><strong>المميزات:</strong> سريع، سري، لا يترك سجلات على التطبيقات</p>
+                <div class="command-box">nmap -sS target.com</div>
+            </div>
+            
+            <div class="section">
+                <h4>TCP Connect Scan (-sT)</h4>
+                <p><strong>كيف يعمل:</strong> يكمل اتصال TCP كامل (ثلاثية اليد)</p>
+                <p><strong>متى تستخدمه:</strong> عندما لا يكون لديك صلاحيات root</p>
+                <div class="command-box">nmap -sT target.com</div>
+            </div>
+            
+            <div class="section">
+                <h4>UDP Scan (-sU)</h4>
+                <p><strong>لماذا هو بطيء:</strong> UDP لا يؤكد الاستلام، يجب الانتظار لوقت طويل</p>
+                <p><strong>أهميته:</strong> يكتشف خدمات مهمة مثل DNS, DHCP, SNMP</p>
+                <div class="command-box">nmap -sU target.com</div>
+            </div>
+            
+            <div class="section">
+                <h4>Stealth Scans (-sN, -sF, -sX)</h4>
+                <p><strong>الغرض:</strong> تجاوز جدرات الحماية البسيطة</p>
+                <p><strong>كيف يعمل:</strong> يستخدم حزم TCP غير الطبيعية</p>
+                <div class="command-box">nmap -sF target.com</div>
+            </div>
+            
+            <div class="example-box">
+                <strong>💡 التكتيك النهائي:</strong>
+                <div class="command-box">nmap -sS -sU -p T:1-1000,U:53,161 target.com</div>
+                <p>مسح TCP وUDP في آنٍ واحد! يمسح TCP المنافذ 1-1000 وUDP المنافذ 53 و161.</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('ports')">
+            <span class="expand-icon">▶</span> تحديد المنافذ (PORT SPECIFICATION)
+        </h2>
+        <div id="ports" class="section hidden">
+            <h3>🚪 إدارة المنافذ بذكاء:</h3>
+            
+            <table class="option-table">
+                <tr>
+                    <th>الصيغة</th>
+                    <th>المعنى</th>
+                    <th>مثال</th>
+                </tr>
+                <tr>
+                    <td><code>-p 80</code></td>
+                    <td>منفذ واحد</td>
+                    <td><div class="command-box">nmap -p 80 target.com</div></td>
+                </tr>
+                <tr>
+                    <td><code>-p 1-1000</code></td>
+                    <td>نطاق من المنافذ</td>
+                    <td><div class="command-box">nmap -p 1-1000 target.com</div></td>
+                </tr>
+                <tr>
+                    <td><code>-p U:53,T:80</code></td>
+                    <td>UDP و TCP معًا</td>
+                    <td><div class="command-box">nmap -p U:53,T:80 target.com</div></td>
+                </tr>
+                <tr>
+                    <td><code>--top-ports 100</code></td>
+                    <td>أشهر 100 منفذ</td>
+                    <td><div class="command-box">nmap --top-ports 100 target.com</div></td>
+                </tr>
+                <tr>
+                    <td><code>-F</code></td>
+                    <td>الوضع السريع (100 منفذ)</td>
+                    <td><div class="command-box">nmap -F target.com</div></td>
+                </tr>
+                <tr>
+                    <td><code>-p-</code></td>
+                    <td>جميع المنافذ (1-65535)</td>
+                    <td><div class="command-box">nmap -p- target.com</div></td>
+                </tr>
+            </table>
+            
+            <div class="tip-box">
+                <strong>⚡ نصيحة الأداء:</strong> لا تستخدم <code>-p-</code> إلا إذا كنت تحتاجه حقاً. يأخذ وقتًا طويلاً! استخدم <code>--top-ports 1000</code> بدلاً منه.
+            </div>
+            
+            <div class="example-box">
+                <strong>🎯 سيناريو عملي:</strong>
+                <div class="command-box">nmap --top-ports 1000 --open target.com</div>
+                <p>يجد أشهر 1000 منفذ ويظهر فقط المنافذ المفتوحة. أنظف وأسرع!</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('service')">
+            <span class="expand-icon">▶</span> اكتشاف الخدمات (-sV)
+        </h2>
+        <div id="service" class="section hidden">
+            <h3>🔎 لماذا هذا أهم جزء؟</h3>
+            <p>معرفة رقم المنفذ لا يكفي. المنفذ 80 قد يكون HTTP أو HTTP-proxy أو حتى شيء آخر!</p>
+            
+            <div class="command-box">nmap -sV target.com</div>
+            
+            <h4>مستويات الكشف:</h4>
+            <ul style="margin: 10px 20px;">
+                <li><code>--version-light</code> (مستوى 2) - الأسرع، الأكثر احتمالية</li>
+                <li><code>--version-all</code> (مستوى 9) - الأبطأ، لكنه الأدق</li>
+                <li><code>--version-intensity 5</code> - مستوى مخصص (0-9)</li>
+            </ul>
+            
+            <div class="section">
+                <h4>مخرجات نموذجية:</h4>
+                <div class="command-box" style="color: #00d4ff;">
+PORT     STATE SERVICE       VERSION<br>
+22/tcp   open  ssh           OpenSSH 7.9p1 Debian 10+deb10u2<br>
+80/tcp   open  http          Apache httpd 2.4.38<br>
+443/tcp  open  ssl/http      Apache httpd 2.4.38
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ تحذير أمني:</strong> يمكن لـ -sV أن يثير أنظمة كشف التسلل (IDS). استخدمه بحذر في البيئات الإنتاجية!
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('script')">
+            <span class="expand-icon">▶</span> المسح باستخدام السكريبتات (-sC, --script)
+        </h2>
+        <div id="script" class="section hidden">
+            <h3>🚀 القوة الحقيقية لـ Nmap!</h3>
+            <p>NSE (Nmap Scripting Engine) يحتوي على أكثر من 600 سكريبت جاهز!</p>
+            
+            <div class="command-box">nmap -sC target.com</div>
+            <p>يعمل السكريبتات الافتراضية - مثالي للمبتدئين!</p>
+            
+            <h4>أفئقة السكريبتات:</h4>
+            <div class="section">
+                <h5>💉 الاختراق والاختبار:</h5>
+                <div class="command-box">nmap --script=vuln target.com</div>
+                <p>يبحث عن الثغرات المعروفة!</p>
+            </div>
+            
+            <div class="section">
+                <h5>🔍 جمع المعلومات:</h5>
+                <div class="command-box">nmap --script=whois,dns-brute target.com</div>
+                <p>جلب معلومات WHOIS وDNS</p>
+            </div>
+            
+            <div class="section">
+                <h5>⚡ التفتيش السريع:</h5>
+                <div class="command-box">nmap --script=http-title,http-headers target.com</div>
+                <p>يعرض عنوان وheaders صفحات الويب</p>
+            </div>
+            
+            <div class="example-box">
+                <strong>💎 السكريبت الذهبي:</strong>
+                <div class="command-box">nmap --script=http-vuln* target.com</div>
+                <p>يفحص جميع الثغرات المتعلقة بـ HTTP! ضروري لاختبار أمان المواقع.</p>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ احترس!</strong> بعض السكريبتات قد تؤدي إلى حجب IP أو حتى إسقاط الخادم. اقرأ الوصف أولاً:
+                <div class="command-box">nmap --script-help=http-slowloris</div>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('os')">
+            <span class="expand-icon">▶</span> اكتشاف نظام التشغيل (-O)
+        </h2>
+        <div id="os" class="section hidden">
+            <h3>🖥️ كيف يعرف Nmap نظام التشغيل؟</h3>
+            <p>يحلل "البصمة الرقمية" (fingerprint) للحزم الشبكية - كل نظام يتصرف بطريقة مختلفة!</p>
+            
+            <div class="command-box">nmap -O target.com</div>
+            
+            <div class="section">
+                <h4>مثال على المخرجات:</h4>
+                <div class="command-box" style="color: #00ff88;">
+Device type: general purpose<br>
+Running: Linux 4.X|5.X<br>
+OS CPE: cpe:/o:linux:linux_kernel:5<br>
+OS details: Linux 4.15 - 5.6
+                </div>
+            </div>
+            
+            <div class="tip-box">
+                <strong>🎯 لزيادة الدقة:</strong>
+                <div class="command-box">nmap -O --osscan-guess target.com</div>
+                <p>--osscan-guess يجعل Nmap يخمن بجرأة أكثر (قد يكون خطأ!)</p>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ يتطلب root!</strong> اكتشاف OS يحتاج إلى صلاحيات root/administrator.
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('timing')">
+            <span class="expand-icon">▶</span> التوقيت والأداء (TIMING)
+        </h2>
+        <div id="timing" class="section hidden">
+            <h3>⏱️ لماذا التوقيت مهم؟</h3>
+            <p>المسح السريع يمكن أن يُكتشف. المسح البطيء يمكن أن يستغرق أياماً. إليك الحل:</p>
+            
+            <table class="option-table">
+                <tr>
+                    <th>الخيار</th>
+                    <th>الاسم</th>
+                    <th>متى تستخدمه؟</th>
+                </tr>
+                <tr>
+                    <td><code>-T0</code></td>
+                    <td>الأبطأ (Paranoid)</td>
+                    <td>تجاوز IDS قوي جداً</td>
+                </tr>
+                <tr>
+                    <td><code>-T1</code></td>
+                    <td>بطيء جداً (Sneaky)</td>
+                    <td>تجاوز IDS</td>
+                </tr>
+                <tr>
+                    <td><code>-T2</code></td>
+                    <td>بطيء (Polite)</td>
+                    <td>لا تستهلك عرض النطاق</td>
+                </tr>
+                <tr>
+                    <td><code>-T3</code></td>
+                    <td>عادي (Normal)</td>
+                    <td>الافتراضي - جيد لمعظم الحالات</td>
+                </tr>
+                <tr>
+                    <td><code>-T4</code></td>
+                    <td>سريع (Aggressive)</td>
+                    <td>شبكات موثوقة سريعة</td>
+                </tr>
+                <tr>
+                    <td><code>-T5</code></td>
+                    <td>الأسرع (Insane)</td>
+                    <td>شبكات محلية فائقة السرعة</td>
+                </tr>
+            </table>
+            
+            <div class="example-box">
+                <strong>⚡ أفضل ممارسة:</strong>
+                <div class="command-box">nmap -T4 --max-retries 1 --host-timeout 30s target.com</div>
+                <p>سريع لكنه يتوقف عن الأجهزة البطيئة بعد 30 ثانية. مثالي للمسح الواسع!</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('evasion')">
+            <span class="expand-icon">▶</span> التهرب من جدرات الحماية (EVASION)
+        </h2>
+        <div id="evasion" class="section hidden">
+            <h3>🥷 لماذا نحتاج التمويه؟</h3>
+            <p>الأنظمة الحديثة تحظر المسح التلقائي. إليك كيف تتسلل:</p>
+            
+            <div class="section">
+                <h4>1. التفتت (Fragmentation)</h4>
+                <div class="command-box">nmap -f target.com</div>
+                <p>يقسم الحزم إلى أجزاء لتجاوز IDS البسيطة</p>
+            </div>
+            
+            <div class="section">
+                <h4>2. الدهاة (Decoys)</h4>
+                <div class="command-box">nmap -D 192.168.1.10,ME,192.168.1.20 target.com</div>
+                <p>يجعل المسح يبدو وكأنه من عدة مصادر مختلفة. ME = عنوانك الحقيقي.</p>
+            </div>
+            
+            <div class="section">
+                <h4>3. التمويه بالبيانات</h4>
+                <div class="command-box">nmap --data-length 10 target.com</div>
+                <p>يضيف 10 بايت من البيانات العشوائية لتجنب التوقيعات المعروفة</p>
+            </div>
+            
+            <div class="section">
+                <h4>4. تغيير TTL</h4>
+                <div class="command-box">nmap --ttl 128 target.com</div>
+                <p>يغير Time-To-Live ليبدو كأنه من نظام مختلف</p>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ التهرب ليس سحرياً!</strong> أنظمة كشف متقدمة مثل Snort أو Suricata ستكتشفك على أي حال.
+                <p>استخدم هذه فقط للتعلم، لا للهجوم!</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('output')">
+            <span class="expand-icon">▶</span> خيارات المخرجات (OUTPUT)
+        </h2>
+        <div id="output" class="section hidden">
+            <h3>📊 حفظ النتائج بذكاء:</h3>
+            
+            <div class="command-box">nmap -oA results target.com</div>
+            <p>يحفظ بـ 3 صيغ دفعة واحدة: normal, XML, grepable</p>
+            
+            <table class="option-table">
+                <tr>
+                    <th>الخيار</th>
+                    <th>الصيغة</th>
+                    <th>الاستخدام</th>
+                </tr>
+                <tr>
+                    <td><code>-oN</code></td>
+                    <td>Normal</td>
+                    <td>للقراءة البشرية</td>
+                </tr>
+                <tr>
+                    <td><code>-oX</code></td>
+                    <td>XML</td>
+                    <td>للمشاركة مع الأدوات الأخرى</td>
+                </tr>
+                <tr>
+                    <td><code>-oG</code></td>
+                    <td>Grepable</td>
+                    <td>للبرمجة والتصفية</td>
+                </tr>
+            </table>
+            
+            <div class="section">
+                <h4>مثال عملي مع grep:</h4>
+                <div class="command-box" style="direction: ltr; text-align: left;">
+grep "open" scan.grep | cut -f1 -d' ' | sort -u
+                </div>
+                <p>يعزل جميع عناوين IP التي لديها منافذ مفتوحة</p>
+            </div>
+        </div>
+
+        <h2 onclick="toggleSection('advanced')">
+            <span class="expand-icon">▶</span> الأوامر المتقدمة والسيناريوهات
+        </h2>
+        <div id="advanced" class="section hidden">
+            <h3>🎯 الأوامر الجاهزة للاستخدام:</h3>
+            
+            <div class="tip-box">
+                <h4>🔍 The "Quick Recon" (استكشاف سريع):</h4>
+                <div class="command-box">nmap -T4 -F -sV --version-light target.com</div>
+                <p>مسح سريع لمعرفة الخدمات الأساسية. أول 5 دقائق في أي اختبار اختراق!</p>
+            </div>
+            
+            <div class="tip-box">
+                <h4>🛡️ The "Stealthy Scan" (مسح سري):</h4>
+                <div class="command-box">nmap -T2 -f -D RND:5 target.com</div>
+                <p>مسح بطيء مع 5 دهاة عشوائية. صعب الكشف!</p>
+            </div>
+            
+            <div class="tip-box">
+                <h4>💉 The "Vulnerability Scan" (فحص الثغرات):</h4>
+                <div class="command-box">nmap -sV --script=vuln --script-args=unsafe=1 target.com</div>
+                <p>يفحص الثغرات باستخدام السكريبتات الخطيرة (unsafe). احذر!</p>
+            </div>
+            
+            <div class="tip-box">
+                <h4>📡 The "Network Sweep" (مسح الشبكة):</h4>
+                <div class="command-box">nmap -sn 192.168.1.0/24 -oA network_sweep</div>
+                <p>يجد جميع الأجهزة الحية ويحفظ النتائج.</p>
+            </div>
+            
+            <div class="warning-box">
+                <h4>⚠️ الأمر "النووي" - لا تستخدمه إلا بإذن!</h4>
+                <div class="command-box">nmap -A -T4 -p- target.com</div>
+                <p><strong>ما يفعله:</strong> OS detection, version detection, script scanning, traceroute, ALL ports<br>
+                <strong>الوقت:</strong> قد يستغرق ساعات!<br>
+                <strong>الخطر:</strong> سيثير كل أنظمة الأمان!</p>
+            </div>
+        </div>
+
+        <div class="section" style="background: rgba(255,0,0,0.1); border: 2px solid #ff0000;">
+            <h3>⚠️ تحذيرات قانونية وأخلاقية</h3>
+            <ul style="margin: 10px 20px; color: #ff6666;">
+                <li><strong>لا تقم بمسح شبكات لا تملكها أو لا تملك إذنًا صريحًا لمسحها.</strong></li>
+                <li>مسح الشبكات العامة قد يكون غير قانوني في بلدك.</li>
+                <li>استخدم <code>scanme.nmap.org</code> للتدريب فقط.</li>
+                <li>هذا الدليل للتعليم والاختبار المصرح به فقط.</li>
+            </ul>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h3>💡 نصيحة نهائية للمبتدئين</h3>
+            <p>ابدأ بالأمر البسيط:</p>
+            <div class="command-box" style="font-size: 1.2em; padding: 20px;">nmap -sV --top-ports 100 target.com</div>
+            <p>ثم تعلم خياراً جديداً كل يوم. خلال أسبوع ستكون خبيراً!</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="button" onclick="showAllSections()">إظهار كل الأقسام</button>
+            <button class="button" onclick="hideAllSections()">إخفاء كل الأقسام</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            const header = section.previousElementSibling;
+            
+            section.classList.toggle('hidden');
+            header.classList.toggle('expanded');
+        }
+
+        function showAllSections() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('hidden'));
+            
+            const headers = document.querySelectorAll('h2');
+            headers.forEach(header => header.classList.add('expanded'));
+        }
+
+        function hideAllSections() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            const headers = document.querySelectorAll('h2');
+            headers.forEach(header => header.classList.remove('expanded'));
+        }
+
+        // تأثيرات إضافية
+        document.querySelectorAll('.command-box').forEach(box => {
+            box.addEventListener('click', function() {
+                // نسخ الأمر إلى الحافظة
+                const text = this.textContent.replace('$ ', '');
+                navigator.clipboard.writeText(text).then(() => {
+                    this.style.background = '#00ff88';
+                    this.style.color = '#0d0d1a';
+                    setTimeout(() => {
+                        this.style.background = '#0d0d1a';
+                        this.style.color = '#00ff88';
+                    }, 500);
+                });
+            });
+        });
+
+        // إظهار قسمين أساسيين افتراضياً
+        window.addEventListener('load', () => {
+            document.getElementById('basic').classList.remove('hidden');
+            document.querySelector('h2[onclick*="basic"]').classList.add('expanded');
+        });
+    </script>
+</body>
+</html>
